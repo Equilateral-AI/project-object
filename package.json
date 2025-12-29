@@ -37,7 +37,8 @@
     "bin/",
     "src/",
     "templates/",
-    "docs/"
+    "docs/",
+    "claude-commands/"
   ],
   "dependencies": {
     "yaml": "^2.3.4"

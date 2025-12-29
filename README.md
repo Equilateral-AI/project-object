@@ -36,11 +36,42 @@ project-object init      # Setup hooks for current project
 project-object status    # Show current context summary
 project-object edit      # Open context file in editor
 project-object show      # Display full context
+project-object sync      # Sync to other AI tools
 project-object clear     # Reset context for this project
 project-object help      # Show all commands
 ```
 
 Short alias: `po` works too (`po init`, `po status`, etc.)
+
+## Cross-Platform Support
+
+Your context works with multiple AI coding tools:
+
+```bash
+project-object sync --cursor     # Creates .cursorrules
+project-object sync --codex      # Creates AGENTS.md
+project-object sync --windsurf   # Creates .windsurfrules
+project-object sync --all        # Sync to all platforms
+```
+
+See [docs/CROSS_PLATFORM.md](docs/CROSS_PLATFORM.md) for detailed integration guides.
+
+## Slash Commands (Optional)
+
+Manage context without leaving Claude Code:
+
+```
+/po-status              # Show context summary
+/po-show                # Display full context
+/po-add decision ...    # Add a decision
+/po-add pattern ...     # Add a pattern
+/po-edit                # Edit interactively
+/po-sync                # Sync to other tools
+```
+
+Install with: `project-object init --with-commands`
+
+See [docs/SLASH_COMMANDS.md](docs/SLASH_COMMANDS.md) for details.
 
 ## What Gets Remembered
 

@@ -8,6 +8,7 @@ const { status } = require('../src/commands/status');
 const { edit } = require('../src/commands/edit');
 const { show } = require('../src/commands/show');
 const { clear } = require('../src/commands/clear');
+const { sync } = require('../src/commands/sync');
 
 const VERSION = require('../package.json').version;
 
@@ -23,16 +24,23 @@ Commands:
   show                Display full context content
   edit [--global]     Open context file in editor
   clear [--global]    Reset context for project (or global)
+  sync [--platform]   Sync context to other AI tools (Cursor, Codex, etc.)
   help                Show this help message
   version             Show version
 
 Options:
   --global, -g        Apply to global context instead of project
+  --cursor            Sync to Cursor (.cursorrules)
+  --codex             Sync to Codex CLI (AGENTS.md)
+  --windsurf          Sync to Windsurf (.windsurfrules)
+  --all               Sync to all platforms
 
 Examples:
   project-object init           # Setup for current project
   project-object status         # Check what context exists
   project-object edit           # Manually curate context
+  project-object sync           # Sync to detected platforms
+  project-object sync --cursor  # Sync to Cursor specifically
   po init --global              # Setup global context
 
 More info: https://github.com/Equilateral-AI/project-object
@@ -60,6 +68,15 @@ async function main() {
         break;
       case 'clear':
         await clear({ global: isGlobal });
+        break;
+      case 'sync':
+        const syncPlatform = flags.find(f => ['--cursor', '--codex', '--windsurf', '--continue'].includes(f));
+        const syncAll = flags.includes('--all');
+        await sync({
+          platform: syncPlatform ? syncPlatform.slice(2) : null,
+          all: syncAll,
+          force: syncAll
+        });
         break;
       case 'version':
       case '-v':
