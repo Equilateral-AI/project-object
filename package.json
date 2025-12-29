@@ -1,0 +1,45 @@
+{
+  "name": "@equilateral/project-object",
+  "version": "0.1.0",
+  "description": "Conceptual continuity for Claude Code - local session memory that compounds",
+  "main": "src/index.js",
+  "bin": {
+    "project-object": "./bin/project-object.js",
+    "po": "./bin/project-object.js"
+  },
+  "scripts": {
+    "test": "node tests/run.js"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "memory",
+    "context",
+    "session",
+    "anthropic",
+    "llm"
+  ],
+  "author": "Equilateral AI <hello@equilateral.ai>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Equilateral-AI/project-object.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Equilateral-AI/project-object/issues"
+  },
+  "homepage": "https://github.com/Equilateral-AI/project-object#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "templates/",
+    "docs/"
+  ],
+  "dependencies": {
+    "yaml": "^2.3.4"
+  }
+}
