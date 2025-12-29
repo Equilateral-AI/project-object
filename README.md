@@ -216,6 +216,8 @@ MIT - Frank would have wanted it that way.
 
 ---
 
+*This was created in Joe's Garage.*
+
 *A gift from [Equilateral AI](https://equilateral.ai).*
 
 *If you need team collaboration, automatic learning, or enterprise features: [mindmeld.dev](https://mindmeld.dev)*
