@@ -1,5 +1,5 @@
 {
-  "name": "@equilateral/project-object",
+  "name": "@equilateral_ai/project-object",
   "version": "0.1.0",
   "description": "Conceptual continuity for Claude Code - local session memory that compounds",
   "main": "src/index.js",

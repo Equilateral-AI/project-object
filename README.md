@@ -9,7 +9,7 @@ Your AI assistant remembers context across sessions. No cloud. No accounts. Just
 ## Install
 
 ```bash
-npm install -g @equilateral/project-object
+npm install -g @equilateral_ai/project-object
 ```
 
 ## Quick Start
