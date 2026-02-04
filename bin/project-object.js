@@ -9,6 +9,7 @@ const { edit } = require('../src/commands/edit');
 const { show } = require('../src/commands/show');
 const { clear } = require('../src/commands/clear');
 const { sync } = require('../src/commands/sync');
+const { update } = require('../src/commands/update');
 
 const VERSION = require('../package.json').version;
 
@@ -19,10 +20,11 @@ Conceptual continuity for Claude Code
 Usage: project-object <command> [options]
 
 Commands:
-  init [--global]     Setup hooks for current project (or global)
-  status              Show context summary for current project
+  init [--global]     Setup hooks and pull standards for current project
+  status              Show context and standards summary
   show                Display full context content
   edit [--global]     Open context file in editor
+  update              Update standards from upstream repositories
   clear [--global]    Reset context for project (or global)
   sync [--platform]   Sync context to other AI tools (Cursor, Codex, etc.)
   help                Show this help message
@@ -35,13 +37,25 @@ Options:
   --windsurf          Sync to Windsurf (.windsurfrules)
   --all               Sync to all platforms
 
+Standards:
+  init pulls coding standards from OpenCore + Community repositories
+  into .standards/ in your project. Standards are injected into AI
+  sessions alongside your project context.
+
+  .standards/opencore/    Open-source coding standards
+  .standards/community/   Community-contributed standards
+  .standards/local/       Your own project-specific standards
+
+  Curate by deleting files you don't need, adding YAML to local/,
+  or submitting a PR to Community Standards to share upstream.
+
 Examples:
-  project-object init           # Setup for current project
-  project-object status         # Check what context exists
+  project-object init           # Setup project + pull standards
+  project-object status         # Check context and standards
+  project-object update         # Pull latest standards
   project-object edit           # Manually curate context
-  project-object sync           # Sync to detected platforms
-  project-object sync --cursor  # Sync to Cursor specifically
-  po init --global              # Setup global context
+  project-object sync --cursor  # Sync to Cursor
+  po init --global              # Setup global context (no standards)
 
 More info: https://github.com/Equilateral-AI/project-object
 `;
@@ -68,6 +82,9 @@ async function main() {
         break;
       case 'clear':
         await clear({ global: isGlobal });
+        break;
+      case 'update':
+        await update();
         break;
       case 'sync':
         const syncPlatform = flags.find(f => ['--cursor', '--codex', '--windsurf', '--continue'].includes(f));

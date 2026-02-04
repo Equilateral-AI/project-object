@@ -4,6 +4,7 @@
 
 const { getProjectName, getContextFilePath, STORAGE_DIR } = require('../config');
 const storage = require('../storage/local');
+const { scanStandards } = require('../standards/scan');
 
 async function status(options = {}) {
   const { global: isGlobal } = options;
@@ -40,6 +41,23 @@ async function status(options = {}) {
   const total = Object.values(stats.sections).reduce((a, b) => a + b, 0);
   console.log(`  ─────────────`);
   console.log(`  Total:       ${total} items`);
+
+  // Standards breakdown
+  const scan = scanStandards(process.cwd());
+  if (scan) {
+    const totalStandards = scan.opencore.count + scan.community.count + scan.local.count;
+    const totalRules = scan.opencore.rules + scan.community.rules + scan.local.rules;
+
+    console.log(`\nStandards:`);
+    console.log(`  OpenCore:    ${String(scan.opencore.count).padStart(3)} standards  (${scan.opencore.rules} rules)`);
+    console.log(`  Community:   ${String(scan.community.count).padStart(3)} standards  (${scan.community.rules} rules)`);
+    console.log(`  Local:       ${String(scan.local.count).padStart(3)} standards  (${scan.local.rules} rules)`);
+    console.log(`  ────────────────────────────────────`);
+    console.log(`  Total:       ${String(totalStandards).padStart(3)} standards  (${totalRules} rules)`);
+  } else {
+    console.log(`\nStandards: not configured`);
+    console.log(`  Run 'project-object init' to pull standards`);
+  }
 
   // Show other projects if checking project-level
   if (!isGlobal) {

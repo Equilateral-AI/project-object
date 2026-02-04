@@ -1,7 +1,7 @@
 {
   "name": "@equilateral_ai/project-object",
-  "version": "0.1.0",
-  "description": "Conceptual continuity for Claude Code - local session memory that compounds",
+  "version": "0.2.0",
+  "description": "Conceptual continuity for Claude Code - session memory and standards management",
   "main": "src/index.js",
   "bin": {
     "project-object": "./bin/project-object.js",
@@ -17,6 +17,8 @@
     "memory",
     "context",
     "session",
+    "standards",
+    "coding-standards",
     "anthropic",
     "llm"
   ],

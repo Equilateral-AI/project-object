@@ -5,7 +5,7 @@
  * or run `project-object init` to install automatically.
  */
 
-const { inject } = require('@equilateral/project-object');
+const { inject } = require('@equilateral_ai/project-object');
 
 module.exports = async function sessionStart() {
   const context = inject(process.cwd());

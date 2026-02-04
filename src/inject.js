@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { getProjectName, getContextFilePath, getConfig } = require('./config');
+const { injectStandards } = require('./standards/inject');
 
 /**
  * Load context for a project
@@ -86,13 +87,21 @@ ${context}
  * Inject context into session (main entry point for hook)
  */
 function inject(projectPath = process.cwd()) {
-  const context = getCombinedContext(projectPath);
+  const parts = [];
 
-  if (!context) {
-    return '';
+  // Project/global context (existing behavior)
+  const context = getCombinedContext(projectPath);
+  if (context) {
+    parts.push(formatForInjection(context));
   }
 
-  return formatForInjection(context);
+  // Standards injection (new in v0.2.0)
+  const standards = injectStandards(projectPath);
+  if (standards) {
+    parts.push(standards);
+  }
+
+  return parts.join('\n');
 }
 
 module.exports = {

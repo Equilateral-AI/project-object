@@ -5,13 +5,14 @@
 const fs = require('fs');
 const path = require('path');
 const { getProjectName, ensureStorageDir, getContextFilePath } = require('../config');
+const { pullStandards, getStandardsPath } = require('../standards/pull');
 
 const SESSION_START_HOOK = `/**
  * Project/Object - Session Start Hook
  * Injects saved context when Claude Code starts
  */
 
-const { inject } = require('@equilateral/project-object');
+const { inject } = require('@equilateral_ai/project-object');
 
 module.exports = async function sessionStart() {
   const context = inject(process.cwd());
@@ -33,9 +34,9 @@ const PRE_COMPACT_HOOK = `/**
 
 const fs = require('fs');
 const path = require('path');
-const { harvest, formatContext, mergeContext } = require('@equilateral/project-object');
-const { getProjectName, getContextFilePath, ensureStorageDir } = require('@equilateral/project-object');
-const storage = require('@equilateral/project-object').storage;
+const { harvest, formatContext, mergeContext } = require('@equilateral_ai/project-object');
+const { getProjectName, getContextFilePath, ensureStorageDir } = require('@equilateral_ai/project-object');
+const storage = require('@equilateral_ai/project-object').storage;
 
 module.exports = async function preCompact({ transcript }) {
   if (!transcript) {
@@ -119,7 +120,7 @@ async function init(options = {}) {
     console.log(`  ✓ Context file exists`);
   }
 
-  // 3. Create Claude Code hooks directory (if not global)
+  // 3. Create Claude Code hooks and register in settings.json (if not global)
   if (!isGlobal) {
     const hooksDir = path.join(projectPath, '.claude', 'hooks');
     if (!fs.existsSync(hooksDir)) {
@@ -143,17 +144,115 @@ async function init(options = {}) {
     } else {
       console.log(`  ⚠ Pre-compact hook exists (not overwritten)`);
     }
+
+    // Register hooks in .claude/settings.json
+    registerHooks(projectPath);
+  }
+
+  // 4. Pull standards (if not global and not already present)
+  if (!isGlobal) {
+    const standardsPath = getStandardsPath(projectPath);
+    if (!fs.existsSync(standardsPath)) {
+      console.log(`\n  Pulling standards...`);
+      try {
+        const result = await pullStandards(projectPath);
+        const oc = result.opencore ? result.opencore.count : 0;
+        const cc = result.community ? result.community.count : 0;
+        console.log(`  ✓ Standards pulled (${oc} OpenCore, ${cc} Community)`);
+      } catch (err) {
+        console.log(`  ⚠ Could not pull standards: ${err.message}`);
+        console.log(`    You can try again later with: project-object update`);
+      }
+    } else {
+      console.log(`  ✓ Standards directory exists`);
+      console.log(`    Run 'project-object update' to pull latest`);
+    }
   }
 
   console.log(`
-Done! Context will now persist across Claude Code sessions.
+Done! Context and standards will now be injected into Claude Code sessions.
 
 Next steps:
   ${isGlobal ? 'project-object edit --global' : 'project-object edit'}    # Add initial context
-  project-object status      # Check context status
-
+  project-object status      # Check context and standards
+${isGlobal ? '' : '  project-object update     # Pull latest standards\n'}
 Context file: ${contextFile}
 `);
+}
+
+/**
+ * Register hooks in .claude/settings.json so Claude Code discovers them
+ */
+function registerHooks(projectPath) {
+  const settingsPath = path.join(projectPath, '.claude', 'settings.json');
+  let settings = {};
+
+  // Load existing settings if present
+  if (fs.existsSync(settingsPath)) {
+    try {
+      settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    } catch (e) {
+      // Malformed settings — start fresh but warn
+      console.log(`  ⚠ Could not parse existing settings.json, creating new one`);
+    }
+  }
+
+  // Ensure hooks structure exists
+  if (!settings.hooks) {
+    settings.hooks = {};
+  }
+
+  // Register session-start hook
+  if (!settings.hooks.SessionStart) {
+    settings.hooks.SessionStart = [];
+  }
+
+  const sessionStartEntry = {
+    matcher: '',
+    hooks: [{
+      type: 'command',
+      command: 'node .claude/hooks/session-start.js'
+    }]
+  };
+
+  // Only add if not already registered
+  const hasSessionStart = settings.hooks.SessionStart.some(
+    entry => entry.hooks && entry.hooks.some(h => h.command && h.command.includes('session-start.js'))
+  );
+
+  if (!hasSessionStart) {
+    settings.hooks.SessionStart.push(sessionStartEntry);
+  }
+
+  // Register pre-compact hook
+  if (!settings.hooks.PreCompact) {
+    settings.hooks.PreCompact = [];
+  }
+
+  const preCompactEntry = {
+    matcher: '',
+    hooks: [{
+      type: 'command',
+      command: 'node .claude/hooks/pre-compact.js'
+    }]
+  };
+
+  const hasPreCompact = settings.hooks.PreCompact.some(
+    entry => entry.hooks && entry.hooks.some(h => h.command && h.command.includes('pre-compact.js'))
+  );
+
+  if (!hasPreCompact) {
+    settings.hooks.PreCompact.push(preCompactEntry);
+  }
+
+  // Write settings
+  const claudeDir = path.join(projectPath, '.claude');
+  if (!fs.existsSync(claudeDir)) {
+    fs.mkdirSync(claudeDir, { recursive: true });
+  }
+
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
+  console.log(`  ✓ Hooks registered in .claude/settings.json`);
 }
 
 module.exports = { init };
