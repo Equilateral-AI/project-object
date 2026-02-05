@@ -181,11 +181,62 @@ Context file: ${contextFile}
 }
 
 /**
+ * Detect the full path to the node executable
+ * Claude Code hooks run in a shell without the user's PATH, so we need absolute paths
+ */
+function getNodePath() {
+  const { execSync } = require('child_process');
+
+  // Try to find node in common locations
+  const candidates = [
+    process.execPath, // The node running this script
+    '/opt/homebrew/opt/node@22/bin/node', // macOS ARM Homebrew
+    '/opt/homebrew/bin/node', // macOS ARM Homebrew (default)
+    '/usr/local/bin/node', // macOS Intel / Linux
+    '/usr/bin/node', // Linux system
+  ];
+
+  // First, check if the current process.execPath is valid
+  if (fs.existsSync(process.execPath)) {
+    return process.execPath;
+  }
+
+  // Try which/where command
+  try {
+    const which = execSync('which node', { encoding: 'utf-8', timeout: 5000 }).trim();
+    if (which && fs.existsSync(which)) {
+      return which;
+    }
+  } catch (e) {
+    // which failed, try candidates
+  }
+
+  // Check candidate paths
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  // Fallback to just 'node' and warn
+  return null;
+}
+
+/**
  * Register hooks in .claude/settings.json so Claude Code discovers them
  */
 function registerHooks(projectPath) {
   const settingsPath = path.join(projectPath, '.claude', 'settings.json');
   let settings = {};
+
+  // Detect node path for hooks
+  const nodePath = getNodePath();
+  if (!nodePath) {
+    console.log(`  ⚠ Could not detect node path. Hooks may not work correctly.`);
+    console.log(`    Ensure 'node' is in your PATH or set it manually in .claude/settings.json`);
+  }
+
+  const nodeCmd = nodePath || 'node';
 
   // Load existing settings if present
   if (fs.existsSync(settingsPath)) {
@@ -202,6 +253,9 @@ function registerHooks(projectPath) {
     settings.hooks = {};
   }
 
+  // Get absolute path to hooks
+  const hooksDir = path.join(projectPath, '.claude', 'hooks');
+
   // Register session-start hook
   if (!settings.hooks.SessionStart) {
     settings.hooks.SessionStart = [];
@@ -211,7 +265,7 @@ function registerHooks(projectPath) {
     matcher: '',
     hooks: [{
       type: 'command',
-      command: 'node .claude/hooks/session-start.js'
+      command: `${nodeCmd} "${path.join(hooksDir, 'session-start.js')}"`
     }]
   };
 
@@ -233,7 +287,7 @@ function registerHooks(projectPath) {
     matcher: '',
     hooks: [{
       type: 'command',
-      command: 'node .claude/hooks/pre-compact.js'
+      command: `${nodeCmd} "${path.join(hooksDir, 'pre-compact.js')}"`
     }]
   };
 
@@ -253,6 +307,9 @@ function registerHooks(projectPath) {
 
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf-8');
   console.log(`  ✓ Hooks registered in .claude/settings.json`);
+  if (nodePath) {
+    console.log(`    Using node: ${nodePath}`);
+  }
 }
 
 module.exports = { init };

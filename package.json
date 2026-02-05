@@ -1,6 +1,6 @@
 {
   "name": "@equilateral_ai/project-object",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Conceptual continuity for Claude Code - session memory and standards management",
   "main": "src/index.js",
   "bin": {
