@@ -264,7 +264,7 @@ Session memory and coding standards should be table stakes for AI coding assista
 
 Project/Object is intentionally simple. It solves two problems well: continuity across sessions and consistent coding standards.
 
-If you need more — team collaboration, intelligent curation, analytics, learning that compounds across your organization — we build that too at [mindmeld.dev](https://mindmeld.dev).
+If you need more — team collaboration, intelligent curation, analytics, learning that compounds across your organization — check out [MindMeld standards injection](https://mindmeld.dev).
 
 ## Why "Project/Object"?
 
@@ -282,4 +282,4 @@ MIT — Frank would have wanted it that way.
 
 *A gift from [Equilateral AI](https://equilateral.ai).*
 
-*If you need team collaboration, automatic learning, or enterprise features: [mindmeld.dev](https://mindmeld.dev)*
+*If you need team collaboration, automatic learning, or enterprise features: [MindMeld standards injection](https://mindmeld.dev)*
